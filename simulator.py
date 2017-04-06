@@ -16,7 +16,7 @@ def normpdf(x, mean, sd):
 
 
 recovery_time = 4 # recovery time in time-steps
-virality = 0.2    # probability that a neighbor cell is infected in
+virality = 0.4    # probability that a neighbor cell is infected in
                   # each time step
 
 class Cell(object):
@@ -31,13 +31,28 @@ class Cell(object):
         self.state = "I"
 
     def process(self, adjacent_cells):
-        pass
+        #print("CALL PROCESS")
+        if self.state == "I":
+            print("=== now the state is:", self.state)
+            print(adjacent_cells)
+            for cell in adjacent_cells:
+                if cell.state == "S":
+                    ran = random.random()
+                    print("random number is: ", ran)
+                    if ran < virality:
+                        print("infect!")
+                        cell.infect()
+                        print(cell)
+        else:
+            pass
 
-    #def __repr__(self):
-    #    return self.__str__
 
-#    def __str__(self):
-#        return "{}, {}".format(self.x, self.y)
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        return "{}, {}, {}".format(self.x, self.y, self.state)
 
 class Map(object):
 
@@ -59,7 +74,12 @@ class Map(object):
         image = [[(0.0,0.0,0.0) for x in range(150)] for y in range(150)]
 
         for x,y in self.cells:
-            image[x][y] = (0.0,1.0,0.0)
+            if self.cells[(x,y)].state == 'S':
+                image[x][y] = (0.0,1.0,0.0)
+            if self.cells[(x,y)].state == 'I':
+                print("CHANGE {},{} TO RED".format(x,y))
+                image[x][y] = (1.0,0.0,0.0)
+
 
         plt.imshow(image)
         return image
@@ -68,12 +88,26 @@ class Map(object):
     def adjacent_cells(self,x,y):
         cell_list = []
 
-        cell_list.append(Cell(x,y+1))
-        cell_list.append(Cell(x,y-1))
-        cell_list.append(Cell(x-1,y))
-        cell_list.append(Cell(x+1,y))
+        try:
+            if y+1 <= 150:
+                cell_list.append(m.cells[(x,y+1)])
+            if y-1 >= 0:
+                cell_list.append(m.cells[(x,y-1)])
+            if x-1 >= 0:
+                cell_list.append(m.cells[(x-1,y)])
+            if x+1 <= 150:
+                cell_list.append(m.cells[(x+1,y)])
+        except KeyError:
+            pass
 
         return cell_list
+
+    def time_step(self):
+        print("IM IN TIME STEP")
+        for x,y in self.cells:
+            #print(self.cells[(x,y)])
+            self.cells[(x,y)].process(self.adjacent_cells(x,y))
+        self.display()
 
 
 def read_map(filename):
@@ -89,12 +123,18 @@ def read_map(filename):
         x = int(fields[0].strip())
         y = int(fields[1].strip())
 
-        print("adding", Cell(x,y))
+        #print("adding", Cell(x,y))
         m.add_cell(Cell(x,y))
 
     return m
 
 
+
 if __name__ == '__main__':
     m = read_map('nyc_map.csv')
-    image = m.display()
+    m.cells[(82,122)].infect()
+    m.cells[(60,90)].infect()
+    print(m.cells[(82,122)].state)
+    print(m.cells[(60,90)].state)
+    m.display()
+
