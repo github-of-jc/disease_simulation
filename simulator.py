@@ -34,7 +34,20 @@ class Cell(object):
     def process(self, adjacent_cells):
         #print("CALL PROCESS")
         if self.state == "I":
-            print("=== now the state is:", self.state)
+            self.count += 1
+            if self.count > recovery_time:
+                print("recover after", recovery_time, "steps")
+                self.state = "S"
+                return
+
+            dead = random.random()
+            p_dead = normpdf(self.count,1,0.5)
+            print(p_dead, dead)
+            if dead > p_dead:
+                self.state = "R"
+                print("DEAD CELL")
+                return
+
             print(adjacent_cells)
             for cell in adjacent_cells:
                 if cell.state == "S":
@@ -44,10 +57,6 @@ class Cell(object):
                         print("infect!")
                         cell.infect()
                         print(cell)
-            self.count += 1
-            if self.count > recovery_time:
-                print("recover after", recovery_time, "steps")
-                self.state = "S"
 
         else:
             pass
