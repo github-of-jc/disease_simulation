@@ -16,7 +16,7 @@ def normpdf(x, mean, sd):
 
 
 recovery_time = 4 # recovery time in time-steps
-virality = 0.4    # probability that a neighbor cell is infected in
+virality = 0.8   # probability that a neighbor cell is infected in
                   # each time step
 
 class Cell(object):
@@ -26,6 +26,7 @@ class Cell(object):
         self.y = y
         self.state = "S" # can be "S" (susceptible), "R" (resistant = dead), or
                          # "I" (infected)
+        self.count = 0
 
     def infect(self):
         self.state = "I"
@@ -43,6 +44,11 @@ class Cell(object):
                         print("infect!")
                         cell.infect()
                         print(cell)
+            self.count += 1
+            if self.count > recovery_time:
+                print("recover after", recovery_time, "steps")
+                self.state = "S"
+
         else:
             pass
 
@@ -52,7 +58,7 @@ class Cell(object):
         return self.__str__()
 
     def __str__(self):
-        return "{}, {}, {}".format(self.x, self.y, self.state)
+        return "<{}, {}, {}, {}>".format(self.x, self.y, self.state, self.count)
 
 class Map(object):
 
@@ -79,6 +85,9 @@ class Map(object):
             if self.cells[(x,y)].state == 'I':
                 print("CHANGE {},{} TO RED".format(x,y))
                 image[x][y] = (1.0,0.0,0.0)
+            if self.cells[(x,y)].state == 'R':
+                print("CHANGE {},{} TO RED".format(x,y))
+                image[x][y] = (0.5,0.5,0.5)
 
 
         plt.imshow(image)
@@ -138,3 +147,4 @@ if __name__ == '__main__':
     print(m.cells[(60,90)].state)
     m.display()
 
+#m.time_step()
